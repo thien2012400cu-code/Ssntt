@@ -1,9 +1,9 @@
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Gemini Hub | v118",
+    Title = "thôn liền hub Hub | thử nghiệm",
     Icon = "shield",
-    Author = "Gemini",
+    Author = "script by thiên",
     Folder = "MySuperHub",
     Size = UDim2.fromOffset(580, 460),
     Transparent = true,
