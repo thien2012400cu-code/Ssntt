@@ -1,7 +1,7 @@
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
 local Window = WindUI:CreateWindow({
-    Title = "thôn liền hub Hub | thử nghiệm",
+    Title = "thôn liền hub | thử nghiệm",
     Icon = "shield",
     Author = "script by thiên",
     Folder = "MySuperHub",
@@ -23,7 +23,7 @@ Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 12)
 
 local dragging, dragStart, startPos
 ToggleBtn.InputBegan:Connect(function(input)
-    if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         dragging = true; dragStart = input.Position; startPos = ToggleBtn.Position
     end
 end)
@@ -44,8 +44,8 @@ local RunService = game:GetService("RunService")
 local Lighting = game:GetService("Lighting")
 
 _G.WS = 16; _G.TweenSpeed = 60
-_G.KillAura = false; _G.AutoMine = false; _G.AutoBag = false; _G.TweenItem = false
-_G.ItemESP = false; _G.ZombieESP = false; _G.PlayerESP = false; _G.ChestESP = false
+_G.KillAura = false; _G.AutoBag = false; _G.TweenItem = false
+_G.ItemESP = false; _G.PlayerESP = false; _G.ChestESP = false
 _G.InfJump = false; _G.InstantInteract = false; _G.TPWall = false; _G.FullBright = false
 
 local LootRemote = RS:FindFirstChild("AdjustBackpack", true)
@@ -152,4 +152,3 @@ end)
 
 game:GetService("ProximityPromptService").PromptButtonHoldBegan:Connect(function(p) if _G.InstantInteract then fireproximityprompt(p) end end)
 game:GetService("UserInputService").JumpRequest:Connect(function() if _G.InfJump and LP.Character then LP.Character.Humanoid:ChangeState("Jumping") end end)
-
