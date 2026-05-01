@@ -9,18 +9,15 @@ local Window = WindUI:CreateWindow({
     Transparent = true,
     Theme = "Dark",
     SideBarWidth = 200,
-    User = { Enabled = true, Callback = function() print("Thon Lien Hub san sang!") end },
+    User = { Enabled = true, Callback = function() print("Đã tải đầy đủ tính năng!") end },
 })
 
--- --- NÚT ĐIỀU KHIỂN MENU ---
+-- --- NÚT MENU ---
 local ScreenGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
 local ToggleBtn = Instance.new("TextButton", ScreenGui)
-ToggleBtn.Size = UDim2.new(0, 50, 0, 50)
-ToggleBtn.Position = UDim2.new(0, 20, 0.4, 0)
-ToggleBtn.Text = "MENU"
-ToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 255)
+ToggleBtn.Size = UDim2.new(0, 50, 0, 50); ToggleBtn.Position = UDim2.new(0, 20, 0.4, 0)
+ToggleBtn.Text = "MENU"; ToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 255)
 Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 12)
-
 local dragging, dragStart, startPos
 ToggleBtn.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -44,8 +41,8 @@ local RunService = game:GetService("RunService")
 local Lighting = game:GetService("Lighting")
 
 _G.WS = 16; _G.TweenSpeed = 60
-_G.KillAura = false; _G.AutoBag = false; _G.TweenItem = false
-_G.ItemESP = false; _G.PlayerESP = false; _G.ChestESP = false
+_G.KillAura = false; _G.AutoMine = false; _G.AutoBag = false; _G.TweenItem = false
+_G.ItemESP = false; _G.ZombieESP = false; _G.PlayerESP = false; _G.ChestESP = false
 _G.InfJump = false; _G.InstantInteract = false; _G.TPWall = false; _G.FullBright = false
 
 local LootRemote = RS:FindFirstChild("AdjustBackpack", true)
@@ -59,15 +56,15 @@ local function CreateESP(obj, text, color)
     end)
 end
 
--- ================= CÁC MỤC TÍNH NĂNG =================
+-- ================= TỔNG HỢP CÁC MỤC =================
 
--- MỤC 1: NGƯỜI CHƠI
+-- TAB 1: NGƯỜI CHƠI
 local MainTab = Window:Tab({ Title = "Người Chơi", Icon = "user" })
 MainTab:Slider({ Title = "Tốc độ chạy", Min = 16, Max = 250, Default = 16, Callback = function(v) _G.WS = v end})
 MainTab:Toggle({ Title = "Nhảy vô hạn", Default = false, Callback = function(v) _G.InfJump = v end})
 MainTab:Toggle({ Title = "Xuyên tường an toàn", Default = false, Callback = function(v) _G.TPWall = v end})
 
--- MỤC 2: CHIẾN ĐẤU
+-- TAB 2: CHIẾN ĐẤU (CÓ AUTO MINE)
 local CombatTab = Window:Tab({ Title = "Chiến Đấu", Icon = "swords" })
 CombatTab:Toggle({ Title = "Tự động đánh", Default = false, Callback = function(v) _G.KillAura = v
     task.spawn(function() while _G.KillAura do pcall(function()
@@ -79,16 +76,25 @@ CombatTab:Toggle({ Title = "Tự động đánh", Default = false, Callback = fu
             end
         end end) task.wait(0.1) end end)
 end})
+CombatTab:Toggle({ Title = "Tự động đào (Auto Mine)", Default = false, Callback = function(v) _G.AutoMine = v
+    task.spawn(function() while _G.AutoMine do pcall(function()
+        local tool = LP.Character:FindFirstChildOfClass("Tool")
+        for _, s in pairs(workspace.Structures:GetChildren()) do
+            if (LP.Character.HumanoidRootPart.Position - s:GetModelCFrame().p).Magnitude < 16 then
+                if tool then tool.Swing:FireServer(); tool.HitTargets:FireServer({s}) end
+            end
+        end end) task.wait(0.2) end end)
+end})
 
--- MỤC 3: NHẶT ĐỒ
+-- TAB 3: NHẶT ĐỒ (KHÔNG ĂN BỚT)
 local LootTab = Window:Tab({ Title = "Nhặt Đồ", Icon = "package" })
 LootTab:Toggle({ Title = "Tự nhặt gần", Default = false, Callback = function(v) _G.AutoBag = v
     task.spawn(function() while _G.AutoBag do pcall(function()
         if LootRemote then
             for _, i in pairs(workspace.DroppedItems:GetChildren()) do
-                if (LP.Character.HumanoidRootPart.Position - i.Position).Magnitude < 18 then LootRemote:FireServer(i) end
+                if (LP.Character.HumanoidRootPart.Position - i.Position).Magnitude < 20 then LootRemote:FireServer(i) end
             end
-        end end) task.wait(0.25) end end)
+        end end) task.wait(0.2) end end)
 end})
 LootTab:Toggle({ Title = "Tự bay nhặt đồ", Default = false, Callback = function(v) _G.TweenItem = v
     task.spawn(function() while _G.TweenItem do pcall(function()
@@ -99,14 +105,19 @@ LootTab:Toggle({ Title = "Tự bay nhặt đồ", Default = false, Callback = fu
         end end) task.wait(0.5) end end)
 end})
 
--- MỤC 4: HIỂN THỊ
+-- TAB 4: HIỂN THỊ (ĐẦY ĐỦ QUÁI, RƯƠNG)
 local ESPTab = Window:Tab({ Title = "Hiển Thị", Icon = "eye" })
 ESPTab:Toggle({ Title = "Hiện rương vàng", Default = false, Callback = function(v) _G.ChestESP = v; if not v then 
     for _,v in pairs(workspace:GetDescendants()) do if v.Name == "Gemini_ESP" then v:Destroy() end end end
     task.spawn(function() while _G.ChestESP do pcall(function()
         local chestRoot = workspace.Map.Tiles:GetChildren()[72].Assets:GetChildren()[59]
-        if chestRoot then
-            for _, c in pairs(chestRoot:GetChildren()) do CreateESP(c, "RƯƠNG VÀNG", Color3.fromRGB(255, 215, 0)) end
+        if chestRoot then for _, c in pairs(chestRoot:GetChildren()) do CreateESP(c, "RƯƠNG VÀNG", Color3.fromRGB(255, 215, 0)) end end
+    end) task.wait(5) end end)
+end})
+ESPTab:Toggle({ Title = "Hiện quái (Zombie)", Default = false, Callback = function(v) _G.ZombieESP = v
+    task.spawn(function() while _G.ZombieESP do pcall(function()
+        for _, z in pairs(workspace.Characters:GetChildren()) do 
+            if z ~= LP.Character and not game.Players:GetPlayerFromCharacter(z) then CreateESP(z, "QUÁI", Color3.fromRGB(255, 0, 0)) end 
         end end) task.wait(5) end end)
 end})
 ESPTab:Toggle({ Title = "Hiện người chơi", Default = false, Callback = function(v) _G.PlayerESP = v
@@ -115,24 +126,20 @@ ESPTab:Toggle({ Title = "Hiện người chơi", Default = false, Callback = fun
             if p ~= LP and p.Character then CreateESP(p.Character.Head, p.DisplayName, Color3.fromRGB(255, 255, 255)) end
         end end) task.wait(5) end end)
 end})
-ESPTab:Toggle({ Title = "Hiện vật phẩm", Default = false, Callback = function(v) _G.ItemESP = v
-    task.spawn(function() while _G.ItemESP do pcall(function()
-        for _, i in pairs(workspace.DroppedItems:GetChildren()) do 
-            local name = i:GetAttribute("ItemName") or i.Name
-            CreateESP(i, name, Color3.fromRGB(0, 255, 150)) 
-        end end) task.wait(5) end end)
-end})
 
--- MỤC 5: DỊCH CHUYỂN
+-- TAB 5: DỊCH CHUYỂN
 local TPTab = Window:Tab({ Title = "Dịch Chuyển", Icon = "map-pin" })
-TPTab:Button({ Title = "Về nhà an toàn", Callback = function()
+TPTab:Button({ Title = "Về nhà an toàn (Void)", Callback = function()
     pcall(function() LP.Character.HumanoidRootPart.CFrame = LP.Character.HumanoidRootPart.CFrame * CFrame.new(0, -500, 0) end)
 end})
 
--- MỤC 6: THẾ GIỚI
+-- TAB 6: THẾ GIỚI (XÓA SƯƠNG MÙ)
 local WorldTab = Window:Tab({ Title = "Thế Giới", Icon = "globe" })
 WorldTab:Toggle({ Title = "Luôn luôn sáng", Default = false, Callback = function(v) _G.FullBright = v end})
 WorldTab:Toggle({ Title = "Tương tác nhanh", Default = false, Callback = function(v) _G.InstantInteract = v end})
+WorldTab:Button({ Title = "Xóa sương mù (Fog)", Callback = function()
+    Lighting.FogEnd = 1e5; for _,v in pairs(Lighting:GetDescendants()) do if v:IsA("Atmosphere") then v:Destroy() end end
+end})
 
 -- --- VÒNG LẶP HỆ THỐNG ---
 RunService.Heartbeat:Connect(function()
