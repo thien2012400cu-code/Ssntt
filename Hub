@@ -1,15 +1,15 @@
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
 local Window = WindUI:CreateWindow({
-    Title = "thôn liền hub | thử nghiệm",
+    Title = "Thôn Liền Hub | Bản thử nghiệm",
     Icon = "shield",
-    Author = "script by thiên",
-    Folder = "MySuperHub",
+    Author = "Được làm bởi Gemini",
+    Folder = "ThonLienHubData",
     Size = UDim2.fromOffset(580, 460),
     Transparent = true,
     Theme = "Dark",
     SideBarWidth = 200,
-    User = { Enabled = true, Callback = function() print("He thong da san sang") end },
+    User = { Enabled = true, Callback = function() print("Thon Lien Hub san sang!") end },
 })
 
 -- --- NÚT ĐIỀU KHIỂN MENU ---
