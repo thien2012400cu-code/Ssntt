@@ -3,16 +3,16 @@ local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/rel
 local Window = WindUI:CreateWindow({
     Title = "Thôn Liền Hub | Bản thử nghiệm",
     Icon = "shield",
-    Author = "Được làm bởi thiên",
+    Author = "Được làm bởi Gemini",
     Folder = "ThonLienHubData",
     Size = UDim2.fromOffset(580, 460),
     Transparent = true,
     Theme = "Dark",
     SideBarWidth = 200,
-    User = { Enabled = true, Callback = function() print("Đã tải đầy đủ tính năng!") end },
+    User = { Enabled = true, Callback = function() print("Hệ thống đã sửa lỗi hoàn tất!") end },
 })
 
--- --- NÚT MENU ---
+-- --- NÚT ĐIỀU KHIỂN MENU ---
 local ScreenGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
 local ToggleBtn = Instance.new("TextButton", ScreenGui)
 ToggleBtn.Size = UDim2.new(0, 50, 0, 50); ToggleBtn.Position = UDim2.new(0, 20, 0.4, 0)
@@ -45,7 +45,10 @@ _G.KillAura = false; _G.AutoMine = false; _G.AutoBag = false; _G.TweenItem = fal
 _G.ItemESP = false; _G.ZombieESP = false; _G.PlayerESP = false; _G.ChestESP = false
 _G.InfJump = false; _G.InstantInteract = false; _G.TPWall = false; _G.FullBright = false
 
-local LootRemote = RS:FindFirstChild("AdjustBackpack", true)
+-- --- HÀM TÌM REMOTE NHẶT ĐỒ ---
+local function GetLootRemote()
+    return RS:FindFirstChild("AdjustBackpack", true)
+end
 
 -- --- HÀM TẠO ESP ---
 local function CreateESP(obj, text, color)
@@ -56,56 +59,60 @@ local function CreateESP(obj, text, color)
     end)
 end
 
--- ================= TỔNG HỢP CÁC MỤC =================
+-- ================= TÍNH NĂNG =================
 
--- TAB 1: NGƯỜI CHƠI
 local MainTab = Window:Tab({ Title = "Người Chơi", Icon = "user" })
 MainTab:Slider({ Title = "Tốc độ chạy", Min = 16, Max = 250, Default = 16, Callback = function(v) _G.WS = v end})
 MainTab:Toggle({ Title = "Nhảy vô hạn", Default = false, Callback = function(v) _G.InfJump = v end})
 MainTab:Toggle({ Title = "Xuyên tường an toàn", Default = false, Callback = function(v) _G.TPWall = v end})
 
--- TAB 2: CHIẾN ĐẤU (CÓ AUTO MINE)
 local CombatTab = Window:Tab({ Title = "Chiến Đấu", Icon = "swords" })
 CombatTab:Toggle({ Title = "Tự động đánh", Default = false, Callback = function(v) _G.KillAura = v
     task.spawn(function() while _G.KillAura do pcall(function()
         local tool = LP.Character:FindFirstChildOfClass("Tool")
-        for _, t in pairs(workspace.Characters:GetChildren()) do
-            local hum = t:FindFirstChild("Humanoid")
-            if hum and hum.Health > 0 and t ~= LP.Character and (LP.Character.HumanoidRootPart.Position - t.HumanoidRootPart.Position).Magnitude < 18 then
-                if tool then tool.Swing:FireServer(); tool.HitTargets:FireServer({t}) end
+        if tool then
+            for _, t in pairs(workspace.Characters:GetChildren()) do
+                local hum = t:FindFirstChild("Humanoid")
+                if hum and hum.Health > 0 and t ~= LP.Character and (LP.Character.HumanoidRootPart.Position - t.HumanoidRootPart.Position).Magnitude < 18 then
+                    tool.Swing:FireServer(); tool.HitTargets:FireServer({t})
+                end
             end
         end end) task.wait(0.1) end end)
 end})
-CombatTab:Toggle({ Title = "Tự động đào (Auto Mine)", Default = false, Callback = function(v) _G.AutoMine = v
+CombatTab:Toggle({ Title = "Tự động đào", Default = false, Callback = function(v) _G.AutoMine = v
     task.spawn(function() while _G.AutoMine do pcall(function()
         local tool = LP.Character:FindFirstChildOfClass("Tool")
-        for _, s in pairs(workspace.Structures:GetChildren()) do
-            if (LP.Character.HumanoidRootPart.Position - s:GetModelCFrame().p).Magnitude < 16 then
-                if tool then tool.Swing:FireServer(); tool.HitTargets:FireServer({s}) end
+        if tool then
+            for _, s in pairs(workspace.Structures:GetChildren()) do
+                if (LP.Character.HumanoidRootPart.Position - s:GetModelCFrame().p).Magnitude < 16 then
+                    tool.Swing:FireServer(); tool.HitTargets:FireServer({s})
+                end
             end
         end end) task.wait(0.2) end end)
 end})
 
--- TAB 3: NHẶT ĐỒ (KHÔNG ĂN BỚT)
 local LootTab = Window:Tab({ Title = "Nhặt Đồ", Icon = "package" })
 LootTab:Toggle({ Title = "Tự nhặt gần", Default = false, Callback = function(v) _G.AutoBag = v
     task.spawn(function() while _G.AutoBag do pcall(function()
-        if LootRemote then
+        local remote = GetLootRemote()
+        if remote then
             for _, i in pairs(workspace.DroppedItems:GetChildren()) do
-                if (LP.Character.HumanoidRootPart.Position - i.Position).Magnitude < 20 then LootRemote:FireServer(i) end
+                if (LP.Character.HumanoidRootPart.Position - i.Position).Magnitude < 25 then 
+                    remote:FireServer(i) 
+                end
             end
         end end) task.wait(0.2) end end)
 end})
 LootTab:Toggle({ Title = "Tự bay nhặt đồ", Default = false, Callback = function(v) _G.TweenItem = v
     task.spawn(function() while _G.TweenItem do pcall(function()
+        local remote = GetLootRemote()
         for _, i in pairs(workspace.DroppedItems:GetChildren()) do
             if not _G.TweenItem then break end
             local tw = TS:Create(LP.Character.HumanoidRootPart, TweenInfo.new((LP.Character.HumanoidRootPart.Position - i.Position).Magnitude/_G.TweenSpeed, Enum.EasingStyle.Linear), {CFrame = i.CFrame * CFrame.new(0,1.5,0)})
-            tw:Play(); tw.Completed:Wait(); task.wait(0.2); if LootRemote then LootRemote:FireServer(i) end
+            tw:Play(); tw.Completed:Wait(); task.wait(0.2); if remote then remote:FireServer(i) end
         end end) task.wait(0.5) end end)
 end})
 
--- TAB 4: HIỂN THỊ (ĐẦY ĐỦ QUÁI, RƯƠNG)
 local ESPTab = Window:Tab({ Title = "Hiển Thị", Icon = "eye" })
 ESPTab:Toggle({ Title = "Hiện rương vàng", Default = false, Callback = function(v) _G.ChestESP = v; if not v then 
     for _,v in pairs(workspace:GetDescendants()) do if v.Name == "Gemini_ESP" then v:Destroy() end end end
@@ -114,7 +121,7 @@ ESPTab:Toggle({ Title = "Hiện rương vàng", Default = false, Callback = func
         if chestRoot then for _, c in pairs(chestRoot:GetChildren()) do CreateESP(c, "RƯƠNG VÀNG", Color3.fromRGB(255, 215, 0)) end end
     end) task.wait(5) end end)
 end})
-ESPTab:Toggle({ Title = "Hiện quái (Zombie)", Default = false, Callback = function(v) _G.ZombieESP = v
+ESPTab:Toggle({ Title = "Hiện quái", Default = false, Callback = function(v) _G.ZombieESP = v
     task.spawn(function() while _G.ZombieESP do pcall(function()
         for _, z in pairs(workspace.Characters:GetChildren()) do 
             if z ~= LP.Character and not game.Players:GetPlayerFromCharacter(z) then CreateESP(z, "QUÁI", Color3.fromRGB(255, 0, 0)) end 
@@ -127,22 +134,20 @@ ESPTab:Toggle({ Title = "Hiện người chơi", Default = false, Callback = fun
         end end) task.wait(5) end end)
 end})
 
--- TAB 5: DỊCH CHUYỂN
 local TPTab = Window:Tab({ Title = "Dịch Chuyển", Icon = "map-pin" })
 TPTab:Button({ Title = "Về nhà an toàn (Void)", Callback = function()
     pcall(function() LP.Character.HumanoidRootPart.CFrame = LP.Character.HumanoidRootPart.CFrame * CFrame.new(0, -500, 0) end)
 end})
 
--- TAB 6: THẾ GIỚI (XÓA SƯƠNG MÙ)
 local WorldTab = Window:Tab({ Title = "Thế Giới", Icon = "globe" })
 WorldTab:Toggle({ Title = "Luôn luôn sáng", Default = false, Callback = function(v) _G.FullBright = v end})
 WorldTab:Toggle({ Title = "Tương tác nhanh", Default = false, Callback = function(v) _G.InstantInteract = v end})
-WorldTab:Button({ Title = "Xóa sương mù (Fog)", Callback = function()
+WorldTab:Button({ Title = "Xóa sương mù", Callback = function()
     Lighting.FogEnd = 1e5; for _,v in pairs(Lighting:GetDescendants()) do if v:IsA("Atmosphere") then v:Destroy() end end
 end})
 
--- --- VÒNG LẶP HỆ THỐNG ---
-RunService.Heartbeat:Connect(function()
+-- --- VÒNG LẶP ÉP HỆ THỐNG ---
+RunService.Stepped:Connect(function()
     pcall(function()
         if LP.Character and LP.Character:FindFirstChild("Humanoid") then
             LP.Character.Humanoid.WalkSpeed = _G.WS
@@ -153,8 +158,11 @@ RunService.Heartbeat:Connect(function()
                 end
             end
         end
-        if _G.FullBright then Lighting.Ambient = Color3.new(1,1,1); Lighting.ClockTime = 14 end
     end)
+end)
+
+RunService.Heartbeat:Connect(function()
+    if _G.FullBright then Lighting.Ambient = Color3.new(1,1,1); Lighting.ClockTime = 14 end
 end)
 
 game:GetService("ProximityPromptService").PromptButtonHoldBegan:Connect(function(p) if _G.InstantInteract then fireproximityprompt(p) end end)
